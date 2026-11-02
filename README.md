@@ -7,5 +7,5 @@ Publica 1 carrossel por vez no Instagram, 3 vezes por dia (09h, 13h e 19h, horá
 - `estado.json` — qual é o próximo da fila (o robô atualiza sozinho)
 - `.github/workflows/publicar.yml` — horários
 
-Precisa de 2 segredos em Settings > Secrets and variables > Actions: `IG_USER_ID` e `IG_TOKEN`.
+Precisa de 1 segredo em Settings > Secrets and variables > Actions: `IG_TOKEN` (token do Instagram, vale 60 dias).
 Para pausar: Actions > Publicar no Instagram > ... > Disable workflow.

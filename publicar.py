@@ -3,9 +3,14 @@
 # Roda no GitHub Actions 3x por dia. Nao depende do computador do Gustavo.
 import json, os, sys, time, urllib.parse, urllib.request
 
-API = "https://graph.facebook.com/v21.0"
-IG = os.environ["IG_USER_ID"].strip()
+API = "https://graph.instagram.com/v21.0"
 TOKEN = os.environ["IG_TOKEN"].strip()
+IG = os.environ.get("IG_USER_ID", "").strip()
+if not IG:  # descobre sozinho o ID da conta a partir do token
+    with urllib.request.urlopen(f"https://graph.instagram.com/v21.0/me?fields=user_id,username&access_token={urllib.parse.quote(TOKEN)}", timeout=60) as r:
+        eu = json.load(r)
+    IG = str(eu["user_id"])
+    print("Conta:", eu.get("username"), flush=True)
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 BRANCH = os.environ.get("GITHUB_REF_NAME", "main")
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/imagens/"

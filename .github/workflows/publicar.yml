@@ -23,7 +23,6 @@ jobs:
 
       - name: Publicar o proximo carrossel
         env:
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
         run: python3 publicar.py
 
