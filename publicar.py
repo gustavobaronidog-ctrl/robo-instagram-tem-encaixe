@@ -5,10 +5,39 @@ import json, os, sys, time, urllib.parse, urllib.request
 
 import re
 
-BRUTO = os.environ["IG_TOKEN"].strip()
-# Aceita o token puro ou o endereco inteiro copiado do navegador (...#access_token=...)
-m = re.search(r"long_lived_token=([^&#\s]+)", BRUTO) or re.search(r"access_token=([^&#\s]+)", BRUTO)
-TOKEN = urllib.parse.unquote(m.group(1)) if m else BRUTO
+APP_ID = "970085075765951"
+REDIRECT = "https://www.temencaixe.com/"
+SEGREDO = os.environ.get("IG_APP_SECRET", "").strip()
+BRUTO = os.environ.get("IG_TOKEN", "").strip()
+
+
+def _openssl(args, dado):
+    import subprocess
+    return subprocess.run(["openssl", "enc", "-aes-256-cbc", "-pbkdf2", "-a", "-A", *args,
+                           "-pass", "env:IG_APP_SECRET"], input=dado.encode(),
+                          capture_output=True, check=True).stdout.decode().strip()
+
+
+def obter_token():
+    # 1) token ja guardado (cifrado com a chave secreta do app)
+    if os.path.exists("token.enc") and SEGREDO:
+        return _openssl(["-d"], open("token.enc").read().strip())
+    m = re.search(r"long_lived_token=([^&#\s]+)", BRUTO) or re.search(r"access_token=([^&#\s]+)", BRUTO)
+    if m:
+        return urllib.parse.unquote(m.group(1))
+    c = re.search(r"[?&#]code=([^&#\s]+)", BRUTO)
+    if c:  # troca o codigo do login pelo token definitivo, uma vez so
+        q = urllib.parse.urlencode({"client_id": APP_ID, "client_secret": SEGREDO,
+                                    "redirect_uri": REDIRECT, "code": urllib.parse.unquote(c.group(1))})
+        with urllib.request.urlopen(f"https://graph.facebook.com/v21.0/oauth/access_token?{q}", timeout=60) as r:
+            tok = json.load(r)["access_token"]
+        open("token.enc", "w").write(_openssl([], tok) + "\n")
+        print("Token obtido e guardado cifrado.", flush=True)
+        return tok
+    return BRUTO
+
+
+TOKEN = obter_token()
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 BRANCH = os.environ.get("GITHUB_REF_NAME", "main")
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/imagens/"
@@ -33,6 +62,12 @@ def descobrir_conta():
         ig = p.get("instagram_business_account")
         if ig:
             return "https://graph.facebook.com/v21.0", ig["id"], ig.get("username")
+    try:
+        eu = _get(f"https://graph.facebook.com/v21.0/me?fields=id,username&access_token={q}")
+        if eu.get("username"):
+            return "https://graph.facebook.com/v21.0", eu["id"], eu.get("username")
+    except Exception:
+        pass
     raise RuntimeError("Nao achei a conta do Instagram ligada a esse token")
 
 

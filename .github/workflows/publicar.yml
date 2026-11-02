@@ -24,12 +24,14 @@ jobs:
       - name: Publicar o proximo carrossel
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_APP_SECRET: ${{ secrets.IG_APP_SECRET }}
         run: python3 publicar.py
 
       - name: Guardar o avanco da fila
+        if: always()
         run: |
           git config user.name "robo-tem-encaixe"
           git config user.email "robo@temencaixe.com"
-          git add estado.json
+          git add estado.json token.enc 2>/dev/null || git add estado.json
           git diff --staged --quiet || git commit -m "avanca a fila"
           git push
