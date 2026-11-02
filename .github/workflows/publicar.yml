@@ -1,0 +1,36 @@
+name: Publicar no Instagram
+
+on:
+  schedule:
+    # Horarios em UTC. Brasilia = UTC-3.
+    - cron: "0 12 * * *"   # 09:00 em Brasilia
+    - cron: "0 16 * * *"   # 13:00 em Brasilia
+    - cron: "0 22 * * *"   # 19:00 em Brasilia
+  workflow_dispatch:        # botao para publicar na hora, se voce quiser testar
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publicar o proximo carrossel
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python3 publicar.py
+
+      - name: Guardar o avanco da fila
+        run: |
+          git config user.name "robo-tem-encaixe"
+          git config user.email "robo@temencaixe.com"
+          git add estado.json
+          git diff --staged --quiet || git commit -m "avanca a fila"
+          git push
