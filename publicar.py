@@ -3,17 +3,41 @@
 # Roda no GitHub Actions 3x por dia. Nao depende do computador do Gustavo.
 import json, os, sys, time, urllib.parse, urllib.request
 
-API = "https://graph.instagram.com/v21.0"
-TOKEN = os.environ["IG_TOKEN"].strip()
-IG = os.environ.get("IG_USER_ID", "").strip()
-if not IG:  # descobre sozinho o ID da conta a partir do token
-    with urllib.request.urlopen(f"https://graph.instagram.com/v21.0/me?fields=user_id,username&access_token={urllib.parse.quote(TOKEN)}", timeout=60) as r:
-        eu = json.load(r)
-    IG = str(eu["user_id"])
-    print("Conta:", eu.get("username"), flush=True)
+import re
+
+BRUTO = os.environ["IG_TOKEN"].strip()
+# Aceita o token puro ou o endereco inteiro copiado do navegador (...#access_token=...)
+m = re.search(r"long_lived_token=([^&#\s]+)", BRUTO) or re.search(r"access_token=([^&#\s]+)", BRUTO)
+TOKEN = urllib.parse.unquote(m.group(1)) if m else BRUTO
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 BRANCH = os.environ.get("GITHUB_REF_NAME", "main")
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/imagens/"
+
+
+def _get(url):
+    with urllib.request.urlopen(url, timeout=60) as r:
+        return json.load(r)
+
+
+def descobrir_conta():
+    """Descobre sozinho qual API e qual ID usar a partir do token."""
+    q = urllib.parse.quote(TOKEN)
+    try:  # token do login do Instagram
+        eu = _get(f"https://graph.instagram.com/v21.0/me?fields=user_id,username&access_token={q}")
+        return "https://graph.instagram.com/v21.0", str(eu["user_id"]), eu.get("username")
+    except Exception:
+        pass
+    # token do login do Facebook / Meta Business
+    pags = _get(f"https://graph.facebook.com/v21.0/me/accounts?fields=instagram_business_account{{id,username}}&access_token={q}")
+    for p in pags.get("data", []):
+        ig = p.get("instagram_business_account")
+        if ig:
+            return "https://graph.facebook.com/v21.0", ig["id"], ig.get("username")
+    raise RuntimeError("Nao achei a conta do Instagram ligada a esse token")
+
+
+API, IG, NOME = descobrir_conta()
+print("Conta:", NOME, flush=True)
 
 
 def chamar(caminho, dados):
