@@ -32,7 +32,7 @@ jobs:
         run: |
           git config user.name "robo-tem-encaixe"
           git config user.email "robo@temencaixe.com"
-          git pull --rebase -q || true
           git add estado_reels.json token.enc 2>/dev/null || git add estado_reels.json
           git diff --staged --quiet || git commit -m "avanca a fila de reels"
+          git pull --rebase -q || true
           git push
