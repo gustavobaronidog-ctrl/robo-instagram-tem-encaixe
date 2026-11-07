@@ -1,6 +1,6 @@
 # Robô do Instagram — Tem Encaixe
 
-Publica 1 carrossel por vez no Instagram, 3 vezes por dia (09h, 13h e 19h, horário de Brasília), na ordem da `fila.json`.
+Publica 1 carrossel por vez no Instagram, 3 vezes por dia (08h, 12h e 18h, horário de Brasília), na ordem da `fila.json`.
 
 - `imagens/` — os 162 slides (27 carrosséis x 6)
 - `fila.json` — ordem de publicação + legenda de cada carrossel
