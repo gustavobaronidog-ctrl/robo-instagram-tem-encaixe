@@ -68,7 +68,14 @@ def descobrir_conta():
             return "https://graph.facebook.com/v21.0", eu["id"], eu.get("username")
     except Exception:
         pass
-    raise RuntimeError("Nao achei a conta do Instagram ligada a esse token")
+    # conta temencaixe no portfolio Baroni business
+    ig = os.environ.get("IG_USER_ID", "").strip() or "17841424609915863"
+    try:
+        eu = _get(f"https://graph.facebook.com/v21.0/{ig}?fields=id,username&access_token={q}")
+        return "https://graph.facebook.com/v21.0", eu["id"], eu.get("username")
+    except urllib.error.HTTPError as e:
+        print("ERRO da Meta ao ler a conta:", e.read().decode()[:600], flush=True)
+        raise
 
 
 API, IG, NOME = descobrir_conta()
