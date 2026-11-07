@@ -1,0 +1,38 @@
+name: Publicar Reel no Instagram
+
+on:
+  schedule:
+    # Horarios em UTC. Brasilia = UTC-3.
+    - cron: "0 13 * * *"   # 10:00 em Brasilia
+    - cron: "0 17 * * *"   # 14:00 em Brasilia
+    - cron: "0 23 * * *"   # 20:00 em Brasilia
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publicar o proximo reel
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_APP_SECRET: ${{ secrets.IG_APP_SECRET }}
+        run: python3 publicar_reel.py
+
+      - name: Guardar o avanco da fila
+        if: always()
+        run: |
+          git config user.name "robo-tem-encaixe"
+          git config user.email "robo@temencaixe.com"
+          git pull --rebase -q || true
+          git add estado_reels.json token.enc 2>/dev/null || git add estado_reels.json
+          git diff --staged --quiet || git commit -m "avanca a fila de reels"
+          git push
