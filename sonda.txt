@@ -1,0 +1,29 @@
+ffmpeg version 8.0.1-3ubuntu2 Copyright (c) 2000-2025 the FFmpeg developers
+== reels/c83.mp4
+codec_name=h264
+codec_type=video
+width=1080
+height=1920
+pix_fmt=yuv420p
+r_frame_rate=30/1
+duration=39.466667
+bit_rate=164483
+duration=39.466667
+bit_rate=167524
+== reels/c84.mp4
+codec_name=h264
+codec_type=video
+width=1080
+height=1920
+pix_fmt=yuv420p
+r_frame_rate=30/1
+duration=39.366667
+bit_rate=178535
+duration=39.366667
+bit_rate=181558
+01-perde-cliente.mp4
+02-dia-bloqueado.mp4
+03-mesmo-horario.mp4
+04-horarios-vagos.mp4
+05-lembrete.mp4
+221
