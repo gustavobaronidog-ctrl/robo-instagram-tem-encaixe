@@ -1,0 +1,38 @@
+name: Publicar Anuncio no Instagram
+
+on:
+  schedule:
+    # Horarios em UTC. Brasilia = UTC-3. Todos antes das 18h.
+    - cron: "0 12 * * *"    # 09:00 em Brasilia
+    - cron: "30 15 * * *"   # 12:30 em Brasilia
+    - cron: "0 19 * * *"    # 16:00 em Brasilia
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publicar o proximo anuncio
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_APP_SECRET: ${{ secrets.IG_APP_SECRET }}
+        run: python3 publicar_anuncio.py
+
+      - name: Guardar o avanco da fila
+        if: always()
+        run: |
+          git config user.name "robo-tem-encaixe"
+          git config user.email "robo@temencaixe.com"
+          git add estado_anuncios.json token.enc 2>/dev/null || git add estado_anuncios.json
+          git diff --staged --quiet || git commit -m "avanca a fila de anuncios"
+          git pull --rebase -q || true
+          git push
