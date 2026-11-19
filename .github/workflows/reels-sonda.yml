@@ -13,14 +13,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Medir um Reel atual
         run: |
-          ffmpeg -version | head -1 > sonda.txt
+          ffmpeg -version > ffv.txt; head -n 1 ffv.txt > sonda.txt
           for f in reels/c83.mp4 reels/c84.mp4; do
             echo "== $f" >> sonda.txt
             ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,r_frame_rate,duration,bit_rate,pix_fmt -show_entries format=duration,bit_rate -of default=nw=1 $f >> sonda.txt
             ffmpeg -hide_banner -i $f -vf "select='gt(scene,0.08)',showinfo" -an -f null - 2>&1 | grep -o "pts_time:[0-9.]*" >> sonda.txt || true
           done
-          ls reels | head -5 >> sonda.txt
-          ls reels | wc -l >> sonda.txt
+          ls reels > lista.txt; head -n 5 lista.txt >> sonda.txt
+          wc -l < lista.txt >> sonda.txt
           mkdir -p sonda_quadros
           ffmpeg -y -v error -ss 0.5 -i reels/c83.mp4 -frames:v 1 sonda_quadros/c83_q1.jpg
           ffmpeg -y -v error -ss 3 -i reels/c83.mp4 -frames:v 1 sonda_quadros/c83_q2.jpg
