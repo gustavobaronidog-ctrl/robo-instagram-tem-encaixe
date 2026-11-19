@@ -41,7 +41,7 @@ for nome, fila, est, por_dia in FILAS:
     if faltando:
         problemas.append(f"{nome}: arquivos que faltam no GitHub: {', '.join(faltando[:8])}")
 
-for url in ["https://www.temencaixe.com"]:
+for url in ["https://www.temencaixe.com", "https://separago.vercel.app/separago", "https://faro-blue.vercel.app"]:
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "vigia-github"})
         with urllib.request.urlopen(req, timeout=30) as r:
