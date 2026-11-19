@@ -6,8 +6,8 @@ import publicar as P
 import publicar_reel as R
 import publicar_anuncio as A
 
-ESPERADO_CARROSSEIS = 3   # 08h, 12h e 18h
-ESPERADO_REELS = 2        # 10h e 14h (o das 20h ainda nao saiu)
+ESPERADO_CARROSSEIS = 3   # 08h, 12h e 15h
+ESPERADO_REELS = 3        # 10h, 14h e 17h
 ESPERADO_ANUNCIOS = 3     # 09h, 12h30 e 16h
 
 
