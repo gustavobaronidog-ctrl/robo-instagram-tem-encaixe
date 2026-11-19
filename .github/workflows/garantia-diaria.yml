@@ -1,0 +1,36 @@
+name: Garantia diaria dos posts
+
+on:
+  schedule:
+    # 18:05 em Brasilia (21:05 UTC): confere o dia e publica o que faltar
+    - cron: "5 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  garantia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir o dia e publicar o que faltou
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_APP_SECRET: ${{ secrets.IG_APP_SECRET }}
+        run: python3 garantia.py
+
+      - name: Guardar o avanco das filas
+        if: always()
+        run: |
+          git config user.name "robo-tem-encaixe"
+          git config user.email "robo@temencaixe.com"
+          git add estado.json estado_reels.json estado_anuncios.json token.enc 2>/dev/null || git add estado.json estado_reels.json estado_anuncios.json
+          git diff --staged --quiet || git commit -m "garantia: avanca as filas"
+          git pull --rebase -q || true
+          git push
