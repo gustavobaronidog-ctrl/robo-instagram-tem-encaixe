@@ -1,4 +1,8 @@
 {
- "proximo": 0,
- "por_dia": {}
+ "proximo": 1,
+ "por_dia": {
+  "2026-11-19": 1
+ },
+ "ultimo_video": "02-dia-bloqueado.mp4",
+ "ultimo_post_id": "18417258655090441"
 }
