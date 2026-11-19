@@ -1,0 +1,21 @@
+name: Reels com mascote novo (uso unico)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: reels-avatar
+  cancel-in-progress: false
+jobs:
+  refazer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar ffmpeg e bibliotecas
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install pillow numpy scipy
+      - name: Trocar o mascote nos Reels que ainda vao sair
+        run: python3 reels_avatar.py
