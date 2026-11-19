@@ -1,0 +1,17 @@
+name: Vigia (confere site, estoque e arquivos)
+
+on:
+  schedule:
+    - cron: "0 11 * * *"   # 08:00 em Brasilia
+    - cron: "0 14 * * *"   # 11:00 em Brasilia
+    - cron: "0 17 * * *"   # 14:00 em Brasilia
+    - cron: "0 20 * * *"   # 17:00 em Brasilia
+  workflow_dispatch:
+
+jobs:
+  vigia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir
+        run: python3 vigia.py
