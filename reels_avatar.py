@@ -25,6 +25,21 @@ def achar_anel(a):
         if melhor is None or w > melhor[2]: melhor = (sl[1].start, sl[0].start, w, h)
     return melhor
 
+
+def achar_disco(a, y0, y1):
+    """Avatar redondo sem anel (fundo branco): acha o disco escuro a esquerda do nome."""
+    reg = a[y0:y1, 40:205].astype(int)
+    lum = reg.mean(axis=2)
+    m = lum < 215
+    lab, n = ndimage.label(m, structure=np.ones((3, 3)))
+    melhor = None
+    for i, sl in enumerate(ndimage.find_objects(lab), 1):
+        h = sl[0].stop - sl[0].start; w = sl[1].stop - sl[1].start
+        if not (80 <= w <= 140 and 0.85 <= w / h <= 1.15): continue
+        if (lab[sl] == i).sum() / (w * h) < 0.55: continue
+        if melhor is None or w > melhor[2]: melhor = (sl[1].start + 40, sl[0].start + y0, w, h)
+    return melhor
+
 def novo_avatar(d):
     k = 4; D = d * k; esp = max(4, round(D * 0.045))
     base = AV.resize((D - 2 * esp, D - 2 * esp), Image.LANCZOS)
@@ -58,8 +73,9 @@ for nome in nomes:
     src = os.path.join("reels", nome)
     if not os.path.exists(src): falhas.append(nome + " (nao existe)"); continue
     fr = os.path.join(tmp, "f.png")
-    subprocess.run(["ffmpeg", "-y", "-v", "error", "-ss", "1.0", "-i", src, "-frames:v", "1", fr], check=True)
-    an = achar_anel(np.array(Image.open(fr).convert("RGB")))
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-ss", "3.0", "-i", src, "-frames:v", "1", fr], check=True)
+    quadro = np.array(Image.open(fr).convert("RGB"))
+    an = achar_anel(quadro) or achar_disco(quadro, 300, 620)
     if not an:
         falhas.append(nome + " (anel nao achado)"); continue
     x, y, w, h = an
