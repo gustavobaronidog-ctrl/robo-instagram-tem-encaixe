@@ -2,9 +2,8 @@ name: Maestro dos posts
 
 on:
   schedule:
-    # Reserva: se a corrente de plantoes se quebrar, o agendamento religa. Das 7h as 22h (Brasilia).
-    - cron: "17,47 10-23 * * *"
-    - cron: "17,47 0-1 * * *"
+    # Reserva: se a corrente de plantoes se quebrar, o agendamento religa. 24 horas por dia.
+    - cron: "17,47 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -41,14 +40,15 @@ jobs:
           git pull --rebase -q || true
           git push || true
 
-      - name: Ligar a proxima rodada (so entre 7h e 22h de Brasilia)
+      - name: Ligar a proxima rodada (24h por dia, com 3 tentativas)
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          H=$(TZ=America/Sao_Paulo date +%H)
-          if [ "$H" -ge 7 ] && [ "$H" -lt 22 ]; then
-            gh workflow run maestro.yml --repo "$GITHUB_REPOSITORY" --ref main
-          else
-            echo "Fora do horario (7h-22h): nao liga a proxima rodada."
-          fi
+          for i in 1 2 3; do
+            gh workflow run maestro.yml --repo "$GITHUB_REPOSITORY" --ref main && exit 0
+            echo "Tentativa $i de ligar a proxima rodada falhou; tentando de novo em 20s."
+            sleep 20
+          done
+          echo "NAO CONSEGUI LIGAR A PROXIMA RODADA: o agendamento de reserva (a cada 30 min) religa o plantao."
+          exit 1
