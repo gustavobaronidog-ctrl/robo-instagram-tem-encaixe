@@ -1,11 +1,7 @@
 name: Publicar Anuncio no Instagram
 
 on:
-  schedule:
-    # Horarios em UTC. Brasilia = UTC-3. Todos antes das 18h.
-    - cron: "0 12 * * *"    # 09:00 em Brasilia
-    - cron: "30 15 * * *"   # 12:30 em Brasilia
-    - cron: "0 19 * * *"    # 16:00 em Brasilia
+  # Horarios agora no maestro.yml (cron antigo desligado para nao duplicar)
   workflow_dispatch:
 
 permissions:
