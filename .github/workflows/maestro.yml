@@ -1,0 +1,37 @@
+name: Maestro dos posts
+
+on:
+  schedule:
+    # A cada 10 min (minutos fora do :00 e :30, que sao os mais atrasados no GitHub).
+    # Publica o que ja devia ter ido ao ar hoje e ainda nao foi.
+    - cron: "7,17,27,37,47,57 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  maestro:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publicar o que estiver atrasado
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_APP_SECRET: ${{ secrets.IG_APP_SECRET }}
+        run: python3 maestro.py
+
+      - name: Guardar o avanco das filas
+        if: always()
+        run: |
+          git config user.name "robo-tem-encaixe"
+          git config user.email "robo@temencaixe.com"
+          git add estado.json estado_reels.json estado_anuncios.json token.enc 2>/dev/null || git add estado.json estado_reels.json estado_anuncios.json
+          git diff --staged --quiet || git commit -m "maestro: avanca as filas"
+          git pull --rebase -q || true
+          git push
