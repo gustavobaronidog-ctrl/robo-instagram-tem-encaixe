@@ -14,8 +14,9 @@ SLOTS = {
     "reel": [10 * 60, 14 * 60, 17 * 60],
     "anuncio": [9 * 60, 12 * 60 + 30, 16 * 60],
 }
-INICIO = 7 * 60    # antes das 7h nao faz nada
+INICIO = 7 * 60    # antes das 7h nao publica nada (mas o plantao continua ligado 24h)
 LIMITE = 22 * 60   # depois das 22h nao publica mais nada naquele dia
+ERROS = {}         # erros ainda nao resolvidos, por tipo de post
 DURACAO = 50 * 60  # tempo de plantao de cada rodada
 INTERVALO = 5 * 60 # de quanto em quanto tempo confere
 
@@ -52,12 +53,14 @@ def conferir(minutos):
         devidos = [s for s in SLOTS[nome] if s <= minutos]
         falta = len(devidos) - ja[nome]
         if falta <= 0:
+            ERROS.pop(nome, None)  # nada devido (ou ja resolvido): erro antigo some
             continue
         print(f"DEVIDO e nao publicado: {nome} (faltam {falta}). Publicando 1 agora.", flush=True)
         try:
             fn[nome]()
         except Exception as e:
             print(f"ERRO ao publicar {nome}: {e}", flush=True)
+            ERROS[nome] = str(e)
             if minutos - devidos[-1] > 90:
                 atrasado = 1
         gravar()
@@ -72,17 +75,21 @@ def main():
         agora = agora_brt()
         minutos = agora.hour * 60 + agora.minute
         if minutos < INICIO or minutos > LIMITE:
-            print("Fora do horario de trabalho (7h-22h): nada a fazer.", flush=True)
-            break
-        atualizar()
-        try:
-            erro = conferir(minutos)
-        except Exception as e:
-            print(f"ERRO na conferencia: {e}", flush=True)
+            print(f"{minutos // 60:02d}:{minutos % 60:02d} fora de 7h-22h: plantao ligado, sem publicar.", flush=True)
+        else:
+            atualizar()
+            try:
+                erro = conferir(minutos)
+            except Exception as e:
+                print(f"ERRO na conferencia: {e}", flush=True)
+                ERROS["conferencia"] = str(e)
         if time.time() - inicio + INTERVALO > DURACAO:
             break
         time.sleep(INTERVALO)
-    print("Maestro ok." if not erro else "Maestro: erro com atraso grande, veja acima.", flush=True)
+    if ERROS:
+        print("ERROS NAO RESOLVIDOS (o GitHub vai avisar por e-mail): " + "; ".join(f"{k}: {v}" for k, v in ERROS.items()), flush=True)
+        erro = 1
+    print("Maestro ok." if not erro else "Maestro: terminou com erro, veja acima.", flush=True)
     return erro
 
 
