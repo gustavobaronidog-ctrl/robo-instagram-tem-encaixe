@@ -1,11 +1,7 @@
 name: Publicar no Instagram
 
 on:
-  schedule:
-    # Horarios em UTC. Brasilia = UTC-3.
-    - cron: "0 11 * * *"   # 08:00 em Brasilia
-    - cron: "0 15 * * *"   # 12:00 em Brasilia
-    - cron: "0 18 * * *"   # 15:00 em Brasilia
+  # Horarios agora no maestro.yml (cron antigo desligado para nao duplicar)
   workflow_dispatch:        # botao para publicar na hora, se voce quiser testar
 
 permissions:
