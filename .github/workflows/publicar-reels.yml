@@ -1,11 +1,7 @@
 name: Publicar Reel no Instagram
 
 on:
-  schedule:
-    # Horarios em UTC. Brasilia = UTC-3.
-    - cron: "0 13 * * *"   # 10:00 em Brasilia
-    - cron: "0 17 * * *"   # 14:00 em Brasilia
-    - cron: "0 20 * * *"   # 17:00 em Brasilia
+  # Horarios agora no maestro.yml (cron antigo desligado para nao duplicar)
   workflow_dispatch:
 
 permissions:
